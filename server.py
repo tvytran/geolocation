@@ -1,4 +1,5 @@
 import json
+import time
 import requests
 import smtplib
 from email.message import EmailMessage
@@ -7,16 +8,17 @@ from dotenv import load_dotenv
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-def mail():
-    load_dotenv()
+load_dotenv()
+
+def mail(id):
     api_key = os.environ.get('APP_P')
 
     send = "tvytran2@gmail.com"
-    receive = "tvytran2@gmail.com"
+    receive = "x0vgum+c1cpdu7rkexfk@sharklasers.com"
     password = api_key
 
-    subject = "Testing Sprinter Mail"
-    body = "Hello, I am testing this."
+    subject = "Testing Sprinter Mail - Thuy-Vy"
+    body = "Alert: Clinician # " + str(id) + " is out of range!"
 
     message = MIMEMultipart()
     message["From"] = send
@@ -55,54 +57,62 @@ def coord_in_range(coord, box):
         c1 = c2
     return inside
 
-if __name__ == '__main__':
 
-    mail()
-
-
+#main method to test if api is 
+def testing_api(out_of_range):
     #obtaining all possible phlebotomists
     url = ["https://3qbqr98twd.execute-api.us-west-2.amazonaws.com/test/clinicianstatus/1", "https://3qbqr98twd.execute-api.us-west-2.amazonaws.com/test/clinicianstatus/2", "https://3qbqr98twd.execute-api.us-west-2.amazonaws.com/test/clinicianstatus/3",
-           "https://3qbqr98twd.execute-api.us-west-2.amazonaws.com/test/clinicianstatus/4", "https://3qbqr98twd.execute-api.us-west-2.amazonaws.com/test/clinicianstatus/5", "https://3qbqr98twd.execute-api.us-west-2.amazonaws.com/test/clinicianstatus/6",
-                "https://3qbqr98twd.execute-api.us-west-2.amazonaws.com/test/clinicianstatus/7"]
-    
+           "https://3qbqr98twd.execute-api.us-west-2.amazonaws.com/test/clinicianstatus/4", "https://3qbqr98twd.execute-api.us-west-2.amazonaws.com/test/clinicianstatus/5", "https://3qbqr98twd.execute-api.us-west-2.amazonaws.com/test/clinicianstatus/6"]
     #api_url = "https://3qbqr98twd.execute-api.us-west-2.amazonaws.com/test/clinicianstatus/5" 
 
-    load_dotenv()
-    api_key = os.environ.get('APP_P')
-    print(api_key)
-    
+    number = 0
     for u in url:
+        number+=1
         #turning api response to dictionary
         response = requests.get(u).json()
-        print("===============================")
+        #print("===============================")
+
+        #error checking
         if "features" not in response:
             print("An error has occured.")
         else:
-            coord = response['features'][0]['geometry']['coordinates']
-        # print(type(coord[0]))
-
+            coord = response['features'][0]['geometry']['coordinates'] #first features is coordinate to test
             coordInRange = False
             
             wholeFeature = response['features']
+            #multiple range locations could be features list
             for p in range(1, len(wholeFeature)):
                 box = response['features'][p]['geometry']['coordinates']
+                #multiple range location could be in coordinates list
                 for b in box:
-                    print(b, "\n")
+                    #print(b, "\n")
                     if coord_in_range(coord,b):
                         coordInRange = True
-            print(coordInRange)
+            if coordInRange == False:
+                if number not in out_of_range:
+                    mail(number)
+                    out_of_range.add(number)
+            else:
+                if number in out_of_range:
+                    out_of_range.remove(number)
+                
+            #print(coordInRange)
 
 
-
-            #print(box)
-            #print(type(box))
-            #print(coord_in_range(coord,box))
-        
+if __name__ == '__main__':
     
+    #mail(7)
+    #seconds = time.time()
+    
+    out_of_range = set()
+    for x in range(3600, 0, -1):
+        testing_api(out_of_range)
+        seconds = x%60
+        minutes = int(x/60)%60
+        print(f"00:{minutes:02}:{seconds:02}")
+        time.sleep(1)
+    
+    #testing_api()
 
 
     
-
-
-    
-
