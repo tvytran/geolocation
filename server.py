@@ -1,8 +1,36 @@
-from flask import Flask, render_template, request, session, redirect, url_for, jsonify
 import json
 import requests
 import smtplib
 from email.message import EmailMessage
+import os
+from dotenv import load_dotenv
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+def mail():
+    load_dotenv()
+    api_key = os.environ.get('APP_P')
+
+    send = "tvytran2@gmail.com"
+    receive = "tvytran2@gmail.com"
+    password = api_key
+
+    subject = "Testing Sprinter Mail"
+    body = "Hello, I am testing this."
+
+    message = MIMEMultipart()
+    message["From"] = send
+    message["To"] = receive
+    message["Subject"] = subject
+    message.attach(MIMEText(body, "plain"))
+
+    with smtplib.SMTP("smtp.gmail.com", 587) as server:
+        server.starttls()
+        server.login(send, password)
+        server.send_message(message)
+
+    print("email sent!")
+
 
 def coord_in_range(coord, box):
     vertices = len(box)
@@ -28,17 +56,26 @@ def coord_in_range(coord, box):
     return inside
 
 if __name__ == '__main__':
+
+    mail()
+
+
+    #obtaining all possible phlebotomists
     url = ["https://3qbqr98twd.execute-api.us-west-2.amazonaws.com/test/clinicianstatus/1", "https://3qbqr98twd.execute-api.us-west-2.amazonaws.com/test/clinicianstatus/2", "https://3qbqr98twd.execute-api.us-west-2.amazonaws.com/test/clinicianstatus/3",
            "https://3qbqr98twd.execute-api.us-west-2.amazonaws.com/test/clinicianstatus/4", "https://3qbqr98twd.execute-api.us-west-2.amazonaws.com/test/clinicianstatus/5", "https://3qbqr98twd.execute-api.us-west-2.amazonaws.com/test/clinicianstatus/6",
                 "https://3qbqr98twd.execute-api.us-west-2.amazonaws.com/test/clinicianstatus/7"]
     
     #api_url = "https://3qbqr98twd.execute-api.us-west-2.amazonaws.com/test/clinicianstatus/5" 
-    
 
+    load_dotenv()
+    api_key = os.environ.get('APP_P')
+    print(api_key)
+    
     for u in url:
+        #turning api response to dictionary
         response = requests.get(u).json()
         print("===============================")
-        if "error" in response:
+        if "features" not in response:
             print("An error has occured.")
         else:
             coord = response['features'][0]['geometry']['coordinates']
@@ -54,6 +91,9 @@ if __name__ == '__main__':
                     if coord_in_range(coord,b):
                         coordInRange = True
             print(coordInRange)
+
+
+
             #print(box)
             #print(type(box))
             #print(coord_in_range(coord,box))
@@ -66,19 +106,3 @@ if __name__ == '__main__':
 
     
 
-        
-
-
-    '''
-    s = smtplib.SMTP('smtp.gmail.com', 587)
-    # start TLS for security
-    s.starttls()
-    # Authentication
-    s.login("liv82084@gmail.com", "Mangoapp2026!")
-    # message to be sent
-    message = "hello"
-    # sending the mail
-    s.sendmail("liv82084@gmail.com", "liv82084@gmail.com", message)
-    # terminating the session
-    s.quit()
-    '''
