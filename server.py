@@ -14,7 +14,7 @@ def mail(id):
     api_key = os.environ.get('APP_P')
 
     send = "tvytran2@gmail.com"
-    receive = "x0vgum+c1cpdu7rkexfk@sharklasers.com"
+    receive = "coding-challenges+alerts@sprinterhealth.com"
     password = api_key
 
     subject = "Testing Sprinter Mail - Thuy-Vy"
