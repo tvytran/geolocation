@@ -34,6 +34,29 @@ def mail(id):
 
     print("email sent!")
 
+def mail_error(id):
+    api_key = os.environ.get('APP_P')
+
+    send = "tvytran2@gmail.com"
+    receive = "coding-challenges+alerts@sprinterhealth.com"
+    password = api_key
+
+    subject = "Testing Sprinter Mail - Thuy-Vy"
+    body = "Alert: Clinician # " + str(id) + " is unreachable!"
+
+    message = MIMEMultipart()
+    message["From"] = send
+    message["To"] = receive
+    message["Subject"] = subject
+    message.attach(MIMEText(body, "plain"))
+
+    with smtplib.SMTP("smtp.gmail.com", 587) as server:
+        server.starttls()
+        server.login(send, password)
+        server.send_message(message)
+
+    print("email sent!")
+
 
 def coord_in_range(coord, box):
     vertices = len(box)
@@ -59,34 +82,37 @@ def coord_in_range(coord, box):
     return inside
 
 def testing_api(u):
+    print("method called")
+    number = u[-1]
     try:
         response = requests.get(u).json()
-        if "features" not in response:
-            print("Error occured for clinician #", number)
+        print(response)
+        coord = response['features'][0]['geometry']['coordinates'] #first features is coordinate to test
+        coordInRange = False
+        
+        wholeFeature = response['features']
+        #multiple range locations could be features list
+        for p in range(1, len(wholeFeature)):
+            box = response['features'][p]['geometry']['coordinates']
+            #multiple range location could be in coordinates list
+            for b in box:
+                #print(b, "\n")
+                if coord_in_range(coord,b):
+                    coordInRange = True
+        if coordInRange == False:
+            if number not in out_of_range:
+                mail(number)
+                out_of_range.add(number)
         else:
-            print(response)
-            coord = response['features'][0]['geometry']['coordinates'] #first features is coordinate to test
-            number = u[-1]
-            coordInRange = False
-            
-            wholeFeature = response['features']
-            #multiple range locations could be features list
-            for p in range(1, len(wholeFeature)):
-                box = response['features'][p]['geometry']['coordinates']
-                #multiple range location could be in coordinates list
-                for b in box:
-                    #print(b, "\n")
-                    if coord_in_range(coord,b):
-                        coordInRange = True
-            if coordInRange == False:
-                if number not in out_of_range:
-                    mail(number)
-                    out_of_range.add(number)
-            else:
-                if number in out_of_range:
-                    out_of_range.remove(number)
-            print(out_of_range)
+            if number in out_of_range:
+                out_of_range.remove(number)
+        if number in no_reach:
+            no_reach.remove(number)
+        print(out_of_range)
     except:
+        if number not in no_reach:
+            mail_error(number)
+            no_reach.add(number)
         print("Error occured for clinician #", number)
 
 
@@ -140,6 +166,7 @@ if __name__ == '__main__':
     #seconds = time.time()
     
     out_of_range = set()
+    no_reach = set()
     url = ["https://3qbqr98twd.execute-api.us-west-2.amazonaws.com/test/clinicianstatus/1", "https://3qbqr98twd.execute-api.us-west-2.amazonaws.com/test/clinicianstatus/2", "https://3qbqr98twd.execute-api.us-west-2.amazonaws.com/test/clinicianstatus/3",
            "https://3qbqr98twd.execute-api.us-west-2.amazonaws.com/test/clinicianstatus/4", "https://3qbqr98twd.execute-api.us-west-2.amazonaws.com/test/clinicianstatus/5", "https://3qbqr98twd.execute-api.us-west-2.amazonaws.com/test/clinicianstatus/6"]
     
