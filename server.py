@@ -93,16 +93,31 @@ def testing_api(u):
         wholeFeature = response['features']
         #multiple range locations could be features list
         for p in range(1, len(wholeFeature)):
+            geo_type =  response['features'][p]['geometry']['type']
             box = response['features'][p]['geometry']['coordinates']
-            #multiple range location could be in coordinates list
-            polygon_accept = response['features'][p]['geometry']['coordinates'][0]
-            if coord_in_range(coord, polygon_accept):
-                coordInRange = True
-            for i in range(1, len(box)):
-                b = response['features'][p]['geometry']['coordinates'][i]
-                #print(b, "\n")
-                if coord_in_range(coord,b):
-                    coordInRange = False
+
+            if geo_type == "Polygon":
+                #multiple range location could be in coordinates list
+                polygon_accept = box[0]
+                if coord_in_range(coord, polygon_accept):
+                    coordInRange = True
+                for i in range(1, len(box)):
+                    b = response['features'][p]['geometry']['coordinates'][i]
+                    #print(b, "\n")
+                    if coord_in_range(coord,b):
+                        coordInRange = False
+            elif geo_type == "MultiPolygon":
+                for b in box:
+                    polygon_accept = b[0]
+                    if coord_in_range(coord, polygon_accept):
+                        coordInRange = True
+                    for i in range(1, len(b)):
+                        if coord_in_range(coord,b[i]):
+                            coordInRange = False
+
+
+
+
         if coordInRange == False:
             if number not in out_of_range:
                 mail(number)
