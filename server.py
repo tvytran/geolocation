@@ -27,7 +27,7 @@ def mail(id):
     message["Subject"] = subject
     message.attach(MIMEText(body, "plain"))
 
-    with smtplib.SMTP("smtp.gmail.com", 587) as server:
+    with smtplib.SMTP("smtp.gmail.com", 587, timeout=5) as server:
         server.starttls()
         server.login(send, password)
         server.send_message(message)
@@ -50,7 +50,7 @@ def mail_error(id):
     message["Subject"] = subject
     message.attach(MIMEText(body, "plain"))
 
-    with smtplib.SMTP("smtp.gmail.com", 587) as server:
+    with smtplib.SMTP("smtp.gmail.com", 587, timeout=5) as server:
         server.starttls()
         server.login(send, password)
         server.send_message(message)
@@ -85,7 +85,7 @@ def testing_api(u):
     #print("method called")
     number = u[-1]
     try:
-        response = requests.get(u).json()
+        response = requests.get(u, timeout=5).json()
         print(response)
         coord = response['features'][0]['geometry']['coordinates'] #first features is coordinate to test
         coordInRange = False
