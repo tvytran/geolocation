@@ -82,7 +82,7 @@ def coord_in_range(coord, box):
     return inside
 
 def testing_api(u):
-    print("method called")
+    #print("method called")
     number = u[-1]
     try:
         response = requests.get(u).json()
@@ -95,10 +95,14 @@ def testing_api(u):
         for p in range(1, len(wholeFeature)):
             box = response['features'][p]['geometry']['coordinates']
             #multiple range location could be in coordinates list
-            for b in box:
+            polygon_accept = response['features'][p]['geometry']['coordinates'][0]
+            if coord_in_range(coord, polygon_accept):
+                coordInRange = True
+            for i in range(1, len(box)):
+                b = response['features'][p]['geometry']['coordinates'][i]
                 #print(b, "\n")
                 if coord_in_range(coord,b):
-                    coordInRange = True
+                    coordInRange = False
         if coordInRange == False:
             if number not in out_of_range:
                 mail(number)
@@ -164,6 +168,10 @@ if __name__ == '__main__':
     
     #mail(7)
     #seconds = time.time()
+    #out_of_range = set()
+    #no_reach = set()
+    #testing_api("https://3qbqr98twd.execute-api.us-west-2.amazonaws.com/test/clinicianstatus/2")
+    
     
     out_of_range = set()
     no_reach = set()
@@ -183,6 +191,7 @@ if __name__ == '__main__':
         current_time = time.time() - s
         time.sleep(max(0, 1-current_time))
         #print(out_of_range)
+    
     
     
 
