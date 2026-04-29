@@ -111,9 +111,6 @@ def testing_api(u):
                     polygon_accept = b[0]
                     if coord_in_range(coord, polygon_accept):
                         coordInRange = True
-                    for i in range(1, len(b)):
-                        if coord_in_range(coord,b[i]):
-                            coordInRange = False
 
 
 
